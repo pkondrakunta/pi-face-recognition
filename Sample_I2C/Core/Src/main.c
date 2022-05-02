@@ -17,7 +17,7 @@ osMutexId i2cmutexHandle;
 /* USER CODE BEGIN PV */
 #define TRBUFSIZE 1
 uint8_t toggle=0;
-uint8_t rx_buf;
+volatile uint8_t rx_buf;
 //uint8_t tx_buf = 0xFE;
 uint8_t tx_buf=0;
 
@@ -53,6 +53,9 @@ uint32_t difference=0;
 uint8_t firstVal=0;
 uint8_t distance=0;
 
+//uint16_t IRVal=0;
+
+
 
 void i2c_send_data (uint8_t cmd) {
 
@@ -79,6 +82,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 			__HAL_TIM_SET_COUNTER(htim,0); //Reset counter
 			firstVal=1; //Set first captured as true
 
+			//Changing polarity to falling edge
 			__HAL_TIM_SET_CAPTUREPOLARITY(htim,TIM_CHANNEL_1,TIM_INPUTCHANNELPOLARITY_FALLING);
 		}
 		else if(firstVal==1)
@@ -87,7 +91,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 			__HAL_TIM_SET_COUNTER(htim,0); //Reset counter
 
 			if (inputVal1<=inputVal2)
-
+//			if (inputVal1<inputVal2)
 			{
 				difference=inputVal2-inputVal1;
 			}
@@ -97,7 +101,8 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 //				difference=0.0f;
 //				difference = (htim->Instance->ARR-inputVal1)+inputVal2;
 			}
-
+//			distance=84000000/(htim->Instance->PSC +1);
+//			distance=(float) ((difference/distance)*340)/2;
 			distance=difference * .034/2;
 			firstVal=0; //Set it back to false
 
@@ -110,9 +115,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	}
 
 }
-/*
-In case you want to incorporate a HRS04 sensor
-*/
 
 void HCSR04_Read(void)
 {
@@ -145,7 +147,7 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of HCSR04_Task */
-  osThreadDef(HCSR04_Task, HCSR04_Start, osPriorityNormal, 0, 128);
+  osThreadDef(HCSR04_Task, HCSR04_Start, osPriorityIdle, 0, 128);
   HCSR04_TaskHandle = osThreadCreate(osThread(HCSR04_Task), NULL);
 
   /* definition and creation of IR_Task */
@@ -153,7 +155,7 @@ int main(void)
   IR_TaskHandle = osThreadCreate(osThread(IR_Task), NULL);
 
   /* definition and creation of I2C_Task */
-  osThreadDef(I2C_Task, Start_I2CTask, osPriorityIdle, 0, 128);
+  osThreadDef(I2C_Task, Start_I2CTask, osPriorityNormal, 0, 128);
   I2C_TaskHandle = osThreadCreate(osThread(I2C_Task), NULL);
 
 
@@ -379,6 +381,8 @@ void IRTask_Start(void const * argument)
 
   for(;;)
   {
+	  //HCSR04_Read();
+	  //osDelay(200);
 	  if(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10)) {
 		  	  tx_buf=1;
 	  		  toggle=1;
@@ -408,16 +412,18 @@ void Start_I2CTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+
 	  if((g_ret = HAL_I2C_Slave_Receive(&hi2c1, (uint8_t*)&rx_buf,TRBUFSIZE,0xFFFFFFFF))!=HAL_OK)
 	  	  {
 	  		  Reset_I2C(&hi2c1);
 	  	  }
+	  
 	  	  if (g_ret ==HAL_OK) {
 	  		if((g_ret = HAL_I2C_Slave_Transmit(&hi2c1,(uint8_t*)&tx_buf, TRBUFSIZE, 0xFFFFFFFF))!=HAL_OK)
 	  		{
 	  			Reset_I2C(&hi2c1);
 
-	  	  }//STM_GET SEND SIGNAL
+	  	  }//STM_GET_IR_READING
 	  		else if (rx_buf==0x02){
 	  			rx_buf=0;
 	  			HAL_I2C_Slave_Transmit(&hi2c1,(uint8_t*)&tx_buf, TRBUFSIZE, 0xFFFFFFFF);

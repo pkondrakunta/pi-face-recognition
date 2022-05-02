@@ -27,9 +27,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  00020010  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0001ad52  00000000  00000000  00020040  2**0
+ 12 .debug_info   0001ad57  00000000  00000000  00020040  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 0000347f  00000000  00000000  0003ad92  2**0
+ 13 .debug_abbrev 0000347f  00000000  00000000  0003ad97  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  14 .debug_aranges 00001578  00000000  00000000  0003e218  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -37,11 +37,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  0002360a  00000000  00000000  00040bf8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00018e00  00000000  00000000  00064202  2**0
+ 17 .debug_line   00018e02  00000000  00000000  00064202  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000db761  00000000  00000000  0007d002  2**0
+ 18 .debug_str    000db761  00000000  00000000  0007d004  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000053  00000000  00000000  00158763  2**0
+ 19 .comment      00000053  00000000  00000000  00158765  2**0
                   CONTENTS, READONLY
  20 .debug_frame  00005c28  00000000  00000000  001587b8  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -1300,7 +1300,7 @@ int main(void)
  8000eda:	6013      	str	r3, [r2, #0]
 
   /* definition and creation of HCSR04_Task */
-  osThreadDef(HCSR04_Task, HCSR04_Start, osPriorityNormal, 0, 128);
+  osThreadDef(HCSR04_Task, HCSR04_Start, osPriorityIdle, 0, 128);
  8000edc:	4b1f      	ldr	r3, [pc, #124]	; (8000f5c <main+0xdc>)
  8000ede:	f107 0438 	add.w	r4, r7, #56	; 0x38
  8000ee2:	461d      	mov	r5, r3
@@ -1336,7 +1336,7 @@ int main(void)
  8000f26:	6013      	str	r3, [r2, #0]
 
   /* definition and creation of I2C_Task */
-  osThreadDef(I2C_Task, Start_I2CTask, osPriorityIdle, 0, 128);
+  osThreadDef(I2C_Task, Start_I2CTask, osPriorityNormal, 0, 128);
  8000f28:	4b10      	ldr	r3, [pc, #64]	; (8000f6c <main+0xec>)
  8000f2a:	463c      	mov	r4, r7
  8000f2c:	461d      	mov	r5, r3
@@ -1943,6 +1943,7 @@ void IRTask_Start(void const * argument)
   for(;;)
   {
 	  //HCSR04_Read();
+	  //osDelay(200);
 	  if(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10)) {
  80012b8:	f44f 6180 	mov.w	r1, #1024	; 0x400
  80012bc:	480c      	ldr	r0, [pc, #48]	; (80012f0 <IRTask_Start+0x48>)
@@ -1959,8 +1960,8 @@ void IRTask_Start(void const * argument)
  80012d0:	2201      	movs	r2, #1
  80012d2:	701a      	strb	r2, [r3, #0]
  80012d4:	e005      	b.n	80012e2 <IRTask_Start+0x3a>
-//	  		  i2c_send_data(toggle);
-//	  		  xSemaphoreGive(i2cmutexHandle);
+////	  		  i2c_send_data(toggle);
+////	  		  xSemaphoreGive(i2cmutexHandle);
 	  	  }
 	  	  else
 	  		  {
@@ -1995,10 +1996,11 @@ void Start_I2CTask(void const * argument)
  80012fe:	b082      	sub	sp, #8
  8001300:	af00      	add	r7, sp, #0
  8001302:	6078      	str	r0, [r7, #4]
-  /* USER CODE BEGIN Start_I2CTask */
-  /* Infinite loop */
-  for(;;)
-  {
+//	  	  	  else
+//	  	  		  {
+//	  	  		  	  toggle=0;
+//	  	  		  	  tx_buf=0;
+//	  	  		  }
 	  if((g_ret = HAL_I2C_Slave_Receive(&hi2c1, (uint8_t*)&rx_buf,TRBUFSIZE,0xFFFFFFFF))!=HAL_OK)
  8001304:	f04f 33ff 	mov.w	r3, #4294967295	; 0xffffffff
  8001308:	2201      	movs	r2, #1
@@ -2023,7 +2025,7 @@ void Start_I2CTask(void const * argument)
  8001328:	4b16      	ldr	r3, [pc, #88]	; (8001384 <Start_I2CTask+0x88>)
  800132a:	781b      	ldrb	r3, [r3, #0]
  800132c:	2b00      	cmp	r3, #0
- 800132e:	d120      	bne.n	8001372 <Start_I2CTask+0x76>
+ 800132e:	d121      	bne.n	8001374 <Start_I2CTask+0x78>
 	  		if((g_ret = HAL_I2C_Slave_Transmit(&hi2c1,(uint8_t*)&tx_buf, TRBUFSIZE, 0xFFFFFFFF))!=HAL_OK)
  8001330:	f04f 33ff 	mov.w	r3, #4294967295	; 0xffffffff
  8001334:	2201      	movs	r2, #1
@@ -2042,35 +2044,35 @@ void Start_I2CTask(void const * argument)
 	  			Reset_I2C(&hi2c1);
  800134e:	480c      	ldr	r0, [pc, #48]	; (8001380 <Start_I2CTask+0x84>)
  8001350:	f7ff fce2 	bl	8000d18 <Reset_I2C>
- 8001354:	e00d      	b.n	8001372 <Start_I2CTask+0x76>
+ 8001354:	e00e      	b.n	8001374 <Start_I2CTask+0x78>
 
 	  	  }//STM_GET_IR_READING
 	  		else if (rx_buf==0x02){
  8001356:	4b09      	ldr	r3, [pc, #36]	; (800137c <Start_I2CTask+0x80>)
  8001358:	781b      	ldrb	r3, [r3, #0]
- 800135a:	2b02      	cmp	r3, #2
- 800135c:	d109      	bne.n	8001372 <Start_I2CTask+0x76>
+ 800135a:	b2db      	uxtb	r3, r3
+ 800135c:	2b02      	cmp	r3, #2
+ 800135e:	d109      	bne.n	8001374 <Start_I2CTask+0x78>
 	  			rx_buf=0;
- 800135e:	4b07      	ldr	r3, [pc, #28]	; (800137c <Start_I2CTask+0x80>)
- 8001360:	2200      	movs	r2, #0
- 8001362:	701a      	strb	r2, [r3, #0]
+ 8001360:	4b06      	ldr	r3, [pc, #24]	; (800137c <Start_I2CTask+0x80>)
+ 8001362:	2200      	movs	r2, #0
+ 8001364:	701a      	strb	r2, [r3, #0]
 	  			HAL_I2C_Slave_Transmit(&hi2c1,(uint8_t*)&tx_buf, TRBUFSIZE, 0xFFFFFFFF);
- 8001364:	f04f 33ff 	mov.w	r3, #4294967295	; 0xffffffff
- 8001368:	2201      	movs	r2, #1
- 800136a:	4907      	ldr	r1, [pc, #28]	; (8001388 <Start_I2CTask+0x8c>)
- 800136c:	4804      	ldr	r0, [pc, #16]	; (8001380 <Start_I2CTask+0x84>)
- 800136e:	f000 ffef 	bl	8002350 <HAL_I2C_Slave_Transmit>
+ 8001366:	f04f 33ff 	mov.w	r3, #4294967295	; 0xffffffff
+ 800136a:	2201      	movs	r2, #1
+ 800136c:	4906      	ldr	r1, [pc, #24]	; (8001388 <Start_I2CTask+0x8c>)
+ 800136e:	4804      	ldr	r0, [pc, #16]	; (8001380 <Start_I2CTask+0x84>)
+ 8001370:	f000 ffee 	bl	8002350 <HAL_I2C_Slave_Transmit>
 //	  			Reset_I2C(&hi2c1);
 	  		}
 	  	  }
 
 
     osDelay(20);
- 8001372:	2014      	movs	r0, #20
- 8001374:	f004 ff1d 	bl	80061b2 <osDelay>
+ 8001374:	2014      	movs	r0, #20
+ 8001376:	f004 ff1c 	bl	80061b2 <osDelay>
 	  if((g_ret = HAL_I2C_Slave_Receive(&hi2c1, (uint8_t*)&rx_buf,TRBUFSIZE,0xFFFFFFFF))!=HAL_OK)
- 8001378:	e7c4      	b.n	8001304 <Start_I2CTask+0x8>
- 800137a:	bf00      	nop
+ 800137a:	e7c3      	b.n	8001304 <Start_I2CTask+0x8>
  800137c:	20004048 	.word	0x20004048
  8001380:	20003fec 	.word	0x20003fec
  8001384:	20000282 	.word	0x20000282
