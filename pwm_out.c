@@ -3,7 +3,6 @@
 #include <unistd.h>
 
 int door_open() {
-//int main(int argc, char** argv) {
 	int gpio = 5;
 	char buf[100];
 
