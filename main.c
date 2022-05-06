@@ -4,18 +4,14 @@
  * Language:  C
  */
 
-
-
+#include "sensor.h"
 #include <stdio.h>
 
 
-/* Project starts here */
-int main(void)
-{
-    
-    printf("PROJECT STARTS HERE !! ");
+int main (void) {
+	sensorStart();
+	
 
-    //ADD RESPECTIVE HEDER FILES AND FUNCTION CALLS BELOW
-    
-    return 0;
+return 0;
+
 }
