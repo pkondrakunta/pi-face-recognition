@@ -53,7 +53,7 @@ def writeToFile(name, uuid, path):
     print("Written to file!")
     
 def backToMain():
-    if recogniseFace("./testing_images/p_test.jpg") == 1:
+    if recogniseFace("./testing_images/Image0.jpg") == 1:
         return True
     else:
         return False
