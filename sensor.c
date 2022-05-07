@@ -67,7 +67,7 @@ int sensorRead(char* buffer) {
     		read(fd, buffer, 1);
     		printf("0x%02X\n", buffer[0]);
 		if (buffer[0] ==1) {
-			char filename[] = "/home/pi/Documents/TELE6550/TestPj/VL53L0X-master/Image%d.jpg",i;
+			char filename[] = "./testing_images/Image%d.jpg",i;
 			startPic(filename, "-vf");
 			fflush(stdout);
 			sleep(5);
