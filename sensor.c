@@ -75,6 +75,10 @@ int sensorRead(char* buffer) {
 			printf("Image successful!\n");
 
 			//Replace face_match with the face recognition function
+			/**
+			 * Face match function in the file file_rw.c
+			 * Function name - read_file
+			 * */
 			if(face_match){
 				pwm = 1;
 				printf("Door opened!\n");
